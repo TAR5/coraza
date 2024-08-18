@@ -160,6 +160,13 @@ func WrapHandler(waf coraza.WAF, h http.Handler) http.Handler {
 			return
 		}
 
+		if !tx.IsResponseBodyAccessible() || !tx.IsResponseBodyProcessable() {
+			// response writer is not going to be wrapped, but used as-is
+			// to generate the response, because the response body does not need to be processed
+			h.ServeHTTP(w, r)
+			return
+		}
+
 		ww, processResponse := wrap(w, r, tx)
 
 		// We continue with the other middlewares by catching the response
